@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "kibtech:block/robot_station" }
+  }
+}

@@ -15,6 +15,7 @@ import com.joniski.kibtech.item.ModItems;
 import com.joniski.kibtech.menus.ModMenus;
 import com.joniski.kibtech.menus.custom.BatteryChargerScreen;
 import com.joniski.kibtech.menus.custom.RobotScreen;
+import com.joniski.kibtech.menus.custom.RobotStationScreen;
 import com.joniski.kibtech.menus.custom.SolarPanelScreen;
 import com.joniski.kibtech.packets.RobotFollowerPacket;
 
@@ -61,6 +62,7 @@ public class KibTechClient {
         event.register(ModMenus.SOLAR_PANEL_MENU.get(), SolarPanelScreen::new);
         event.register(ModMenus.BATTERY_CHARGER_MENU.get(), BatteryChargerScreen::new);
         event.register(ModMenus.ROBOT_MENU.get(), RobotScreen::new);
+        event.register(ModMenus.ROBOT_STATION_MENU.get(), RobotStationScreen::new);
     }
 
     @SubscribeEvent
@@ -71,7 +73,5 @@ public class KibTechClient {
         event.registerLayerDefinition(DiamondRobotModel.LAYER_LOCATION, DiamondRobotModel::createBodyLayer);
     }
  
-
-  
 }
 

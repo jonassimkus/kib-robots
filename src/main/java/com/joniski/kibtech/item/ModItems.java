@@ -5,7 +5,6 @@ import com.joniski.kibtech.block.ModBlocks;
 import com.joniski.kibtech.entity.ModEntities;
 import com.joniski.kibtech.entity.custom.RobotEntity;
 import com.joniski.kibtech.item.custom.BatteryItem;
-import com.joniski.kibtech.item.custom.ChipItem;
 import com.joniski.kibtech.item.custom.RobotItem;
 import com.joniski.kibtech.item.custom.RobotWandItem;
 
@@ -27,7 +26,7 @@ public class ModItems {
         public static final DeferredItem<Item> NETHERITE_ROBOT_ITEM = ITEMS.register("netherite_robot_item", () -> new RobotItem(new Item.Properties().stacksTo(1), ModEntities.NETHERITE_ROBOT.get()));
         public static final DeferredItem<Item> IRON_ROBOT_ITEM = ITEMS.register("iron_robot_item", () -> new RobotItem(new Item.Properties().stacksTo(1), ModEntities.IRON_ROBOT.get()));
         public static final DeferredItem<Item> DIAMOND_ROBOT_ITEM = ITEMS.register("diamond_robot_item", () -> new RobotItem(new Item.Properties().stacksTo(1), ModEntities.DIAMOND_ROBOT.get()));
-        public static final DeferredItem<Item> CHIP_ITEM = ITEMS.register("chip_item", () -> new ChipItem(new Item.Properties().stacksTo(1)));
+        public static final DeferredItem<Item> CHIP_ITEM = ITEMS.register("chip_item", () -> new Item(new Item.Properties().stacksTo(1)));
         public static final DeferredItem<Item> ROBOT_WAND_ITEM = ITEMS.register("robot_wand_item", () -> new RobotWandItem(new Item.Properties().stacksTo(1)));
 
         public static void register(IEventBus modEventBus){

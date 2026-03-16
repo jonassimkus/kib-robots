@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Debug;
 
 import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.block.ModBlocks;
+import com.joniski.kibtech.block.custom.RobotStation;
+import com.joniski.kibtech.block.custom.RobotStationEntity;
 import com.joniski.kibtech.component.ModDataComponents;
 import com.joniski.kibtech.component.PowerRecord;
 import com.joniski.kibtech.enums.RobotWorkType;
@@ -22,6 +24,7 @@ import com.joniski.kibtech.util.TreeUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.core.component.DataComponents;
@@ -102,6 +105,7 @@ public class RobotEntity extends Animal{
     private BlockPos station;
     private List<BlockPos> targetTree;
     public Item dropItem = ModItems.COPPER_ROBOT_ITEM.asItem();
+    public boolean goStation = false;
     public int maxArea = 5;
     private boolean moving = false;
     private RobotWorkType workType = RobotWorkType.NONE;
@@ -217,7 +221,7 @@ public class RobotEntity extends Animal{
             return null;
         }
 
-        if (!(level().getBlockState(station).getBlock() instanceof ChestBlock)){
+        if (!(level().getBlockState(station).getBlock() instanceof RobotStation)){
             return null;
         }
 
@@ -225,9 +229,11 @@ public class RobotEntity extends Animal{
     }
 
     public void setStation(BlockPos newStation){
-        if ((level().getBlockState(newStation).getBlock() instanceof ChestBlock)){
+        if ((level().getBlockState(newStation).getBlock() instanceof RobotStation)){
+            goStation = false;
+            stopMoving();
             station = newStation;
-        }   
+        }  
     }
 
     @Override
@@ -339,6 +345,7 @@ public class RobotEntity extends Animal{
 
     public void stopMoving(){
         moving = false;
+        goStation = false;
         getNavigation().stop();
     }
 
@@ -372,8 +379,24 @@ public class RobotEntity extends Animal{
             return;
         }
 
-      //  goToSpecialBlocks();
-       // return;
+        if (getStation() != null && !goStation){
+            int amountFull = 0;
+            for (int i = 0; i < inventory.getSlots(); ++i){
+                if (inventory.getStackInSlot(i).getCount() > 0){
+                    amountFull += 1;
+                }
+            }
+
+            if (amountFull == inventory.getSlots()){
+                goToStation();
+                return;
+            }
+        }
+
+        if (goStation){
+            goToStation();
+            return;
+        }
 
         if (workType == RobotWorkType.FARMER){
             farm();
@@ -384,6 +407,8 @@ public class RobotEntity extends Animal{
             lumberjack();
             return;
         } 
+
+
     }
 
     public void follow(){
@@ -401,6 +426,46 @@ public class RobotEntity extends Animal{
         }
     }
 
+    public void goToStation(){
+        if (!moving){
+            if (getStation() == null){
+                return;
+            }
+
+            stopMoving();
+            moving = true;
+            goStation = true;
+
+            getNavigation().moveTo(getStation().getX(), getStation().getY(), getStation().getZ(), moveSpeed);
+            return;
+        }
+
+        if (getNavigation().isStuck()){
+            stopMoving();
+            return;
+        }
+
+        if (getNavigation().isDone()){
+            stopMoving();
+            RobotStationEntity robotStationEntity = (RobotStationEntity)level().getBlockEntity(getStation());
+            for (int i = 2; i < inventory.getSlots(); ++i){
+                for (int v = 0; v < robotStationEntity.inventory.getSlots(); ++ v){
+                    if (inventory.getStackInSlot(i).getCount() == 0){
+                        continue;
+                    }
+                    inventory.setStackInSlot(i, robotStationEntity.inventory.insertItem(v, inventory.getStackInSlot(i), false));
+                }
+            }
+
+            return;
+        }
+
+        if (getNavigation().getPath() == null){
+            stopMoving();
+            return;
+        }
+    }
+
 
     public void farm(){
         if (searchStart == null || searchEnd == null){
@@ -412,6 +477,7 @@ public class RobotEntity extends Animal{
             BlockPos closest = getClosestBlock(validBlocks, blockPosition());
 
             if (closest == null){
+                stopMoving();
                 return;
             }
 

@@ -129,6 +129,10 @@ public class SolarPanelEntity extends BlockEntity implements MenuProvider{
             generatedThisTick = 0;
         }
 
+        if (!level.canSeeSky(pos)){
+            generatedThisTick = 0;
+        }
+
         setChanged();
 
         IEnergyStorage otherStorage =  level.getCapability(Capabilities.EnergyStorage.BLOCK, pos.below(), Direction.UP);

@@ -28,16 +28,15 @@ public class ModBlocks {
         .noOcclusion()
     ));
 
-    public static final DeferredBlock<Block> BATTERY_CHARGER = registerBlock("battery_charger",
-     () -> new BatteryCharger(BlockBehaviour.Properties.of()
+    public static final DeferredBlock<Block> ROBOT_STATION = registerBlock("robot_station",
+     () -> new RobotStation(BlockBehaviour.Properties.of()
         .strength(2f)
         .requiresCorrectToolForDrops()
         .sound(SoundType.STONE)
-        .noOcclusion()
     ));
 
-    public static final DeferredBlock<Block> ROBOT_STATION = registerBlock("robot_station",
-     () -> new RobotStation(BlockBehaviour.Properties.of()
+    public static final DeferredBlock<Block> BATTERY_CHARGER = registerBlock("battery_charger",
+     () -> new BatteryCharger(BlockBehaviour.Properties.of()
         .strength(2f)
         .requiresCorrectToolForDrops()
         .sound(SoundType.STONE)

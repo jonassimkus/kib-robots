@@ -2,6 +2,7 @@ package com.joniski.kibtech.block.custom;
 
 import java.util.List;
 
+import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.block.ModBlockEntity;
 import com.mojang.serialization.MapCodec;
 
@@ -13,6 +14,7 @@ import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -22,6 +24,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams.Builder;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class RobotStation extends BaseEntityBlock{
 
@@ -31,12 +35,10 @@ public class RobotStation extends BaseEntityBlock{
         super(properties);
     }
 
-
     @Override
     public BlockEntity newBlockEntity(BlockPos arg0, BlockState arg1) {
         return new RobotStationEntity(arg0, arg1);
     }
-
 
     @Override
     protected RenderShape getRenderShape(BlockState state) {
@@ -47,6 +49,7 @@ public class RobotStation extends BaseEntityBlock{
     protected MapCodec<? extends BaseEntityBlock> codec() {
         return CODEC;
     }
+
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {

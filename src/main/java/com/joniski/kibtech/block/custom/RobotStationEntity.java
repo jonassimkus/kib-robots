@@ -1,12 +1,14 @@
 package com.joniski.kibtech.block.custom;
 
 import javax.annotation.Nullable;
+import javax.swing.plaf.basic.BasicComboBoxUI.ItemHandler;
 
 import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.block.ModBlockEntity;
 import com.joniski.kibtech.block.ModBlocks;
 import com.joniski.kibtech.item.custom.BatteryItem;
 import com.joniski.kibtech.menus.custom.BatteryChargerMenu;
+import com.joniski.kibtech.menus.custom.RobotStationMenu;
 import com.joniski.kibtech.menus.custom.SolarPanelMenu;
 
 import net.minecraft.core.BlockPos;
@@ -33,15 +35,16 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.energy.EnergyStorage;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 @EventBusSubscriber(modid =  KibTech.MODID)
-public class RobotStationEntity extends BlockEntity implements MenuProvider{
+public class RobotStationEntity extends BlockEntity implements MenuProvider {
 
-    public final ItemStackHandler inventory = new ItemStackHandler(3){
+    public final ItemStackHandler inventory = new ItemStackHandler(27){
         @Override
         protected int getStackLimit(int slot, ItemStack stack) {
-            return 1;
+            return stack.getMaxStackSize();
         };
 
 
@@ -59,10 +62,44 @@ public class RobotStationEntity extends BlockEntity implements MenuProvider{
     };
 
     private EnergyStorage energyStorage;
+    private IEnergyStorage upwardInterface;
 
     public RobotStationEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntity.ROBOT_STATION_BE.get(), pos, blockState);
         energyStorage = new EnergyStorage(5000);
+    
+        upwardInterface = new IEnergyStorage() {
+            @Override
+            public boolean canExtract() {
+                return false;
+            }
+
+            @Override
+            public boolean canReceive() {
+                return energyStorage.canReceive();
+            }
+
+            @Override
+            public int extractEnergy(int arg0, boolean arg1) {
+                return 0;
+            }
+
+            @Override
+            public int getEnergyStored() {
+                return energyStorage.getEnergyStored();
+            }
+
+            @Override
+            public int getMaxEnergyStored() {
+                return energyStorage.getMaxEnergyStored();
+            }
+
+            @Override
+            public int receiveEnergy(int arg0, boolean arg1) {
+                return energyStorage.receiveEnergy(arg0, arg1);
+            }
+            
+        };
     }
 
 
@@ -85,8 +122,7 @@ public class RobotStationEntity extends BlockEntity implements MenuProvider{
 
     @Override
     public AbstractContainerMenu createMenu(int arg0, Inventory arg1, Player arg2) {
-      //  return new BatteryChargerMenu(arg0, arg1, this);
-        return null;
+        return new RobotStationMenu(arg0, arg1, this);
     }
 
 
@@ -97,12 +133,23 @@ public class RobotStationEntity extends BlockEntity implements MenuProvider{
 
 
     public static IEnergyStorage getCapabilities(RobotStationEntity robotStationEntity, Direction direction){
-        return robotStationEntity.energyStorage;
+        if (direction == Direction.UP){
+            return robotStationEntity.upwardInterface;
+        }
+
+        return null;
     }
 
+
     public void tick(Level level, BlockPos pos, BlockState state){
-//        setChanged();
-  //      level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        if (energyStorage.getEnergyStored() <= 0){
+            return;
+        }
+
+        energyStorage.extractEnergy(1, false);
+
+        setChanged();
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
 
@@ -136,5 +183,6 @@ public class RobotStationEntity extends BlockEntity implements MenuProvider{
 
         Containers.dropContents(level, worldPosition, drops);
     }
+
 
 }

@@ -3,10 +3,8 @@ package com.joniski.kibtech.item.custom;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.jcraft.jorbis.Block;
-import com.joniski.kibtech.KibTech;
+import com.joniski.kibtech.block.custom.RobotStationEntity;
 import com.joniski.kibtech.entity.custom.RobotEntity;
-import com.joniski.kibtech.item.ModItems;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -16,16 +14,11 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 
 public class RobotWandItem extends Item{
 
@@ -105,9 +98,9 @@ public class RobotWandItem extends Item{
             context.getPlayer().getCooldowns().addCooldown(this, 20);
 
 
-            if (context.getLevel().getBlockEntity(context.getClickedPos()) instanceof ChestBlockEntity chest){
+            if (context.getLevel().getBlockEntity(context.getClickedPos()) instanceof RobotStationEntity){
                 setRobot.setStation(context.getClickedPos());
-                context.getPlayer().sendSystemMessage((Component.literal("Robot chest set.")));
+                context.getPlayer().sendSystemMessage((Component.literal("Robot station set.")));
                 setRobot = null;
                 startPos = null;
                 endPos = null;

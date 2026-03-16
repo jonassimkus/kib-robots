@@ -2,6 +2,7 @@
   "itemGroup.kibtech.kibtech": "Kib Tech",
   "block.kibtech.solar_panel": "Solar Panel",
   "block.kibtech.battery_charger": "Battery Charger",
+  "block.kibtech.robot_station": "Robot Station",
 
   "item.kibtech.weak_battery": "Weak Battery",
   "item.kibtech.strong_battery": "Strong Battery",

@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import com.joniski.kibtech.KibTech;
 import com.joniski.kibtech.menus.custom.BatteryChargerMenu;
 import com.joniski.kibtech.menus.custom.RobotMenu;
+import com.joniski.kibtech.menus.custom.RobotStationMenu;
 import com.joniski.kibtech.menus.custom.SolarPanelMenu;
 
 import net.minecraft.core.registries.Registries;
@@ -28,6 +29,9 @@ public class ModMenus {
 
     public static final DeferredHolder<MenuType<?>, MenuType<BatteryChargerMenu>> BATTERY_CHARGER_MENU =
             registerMenuType("battery_charger_menu", BatteryChargerMenu::new);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<RobotStationMenu>> ROBOT_STATION_MENU =
+            registerMenuType("robot_station_menu", RobotStationMenu::new);
 
     public static final DeferredHolder<MenuType<?>, MenuType<RobotMenu>> ROBOT_MENU = 
     MENUS.register("robot_menu", () -> IMenuTypeExtension.create( (windowId, inv, data) -> {
