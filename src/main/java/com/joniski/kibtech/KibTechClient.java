@@ -11,6 +11,7 @@ import com.joniski.kibtech.entity.client.CopperRobotModel;
 import com.joniski.kibtech.entity.client.CopperRobotRenderer;
 import com.joniski.kibtech.entity.custom.DiamondRobotEntity;
 import com.joniski.kibtech.entity.custom.RobotEntity;
+import com.joniski.kibtech.item.ModItems;
 import com.joniski.kibtech.menus.ModMenus;
 import com.joniski.kibtech.menus.custom.BatteryChargerScreen;
 import com.joniski.kibtech.menus.custom.RobotScreen;
@@ -18,6 +19,7 @@ import com.joniski.kibtech.menus.custom.SolarPanelScreen;
 import com.joniski.kibtech.packets.RobotFollowerPacket;
 
 import net.minecraft.client.renderer.entity.EntityRenderers;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -29,6 +31,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
@@ -68,6 +71,7 @@ public class KibTechClient {
         event.registerLayerDefinition(DiamondRobotModel.LAYER_LOCATION, DiamondRobotModel::createBodyLayer);
     }
  
+
   
 }
 

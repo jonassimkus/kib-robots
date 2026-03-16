@@ -85,6 +85,7 @@ import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarrotBlock;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.entity.EntityType.Builder;
 
@@ -98,7 +99,7 @@ public class RobotEntity extends Animal{
     private UUID followEntityUUID;
     public BlockPos searchStart = null;
     public BlockPos searchEnd;
-    public BlockPos station;
+    private BlockPos station;
     private List<BlockPos> targetTree;
     public Item dropItem = ModItems.COPPER_ROBOT_ITEM.asItem();
     public int maxArea = 5;
@@ -209,6 +210,24 @@ public class RobotEntity extends Animal{
             tag.putIntArray("searchStart", start);
             tag.putIntArray("searchEnd", end);
         }
+    }
+
+    public BlockPos getStation(){
+        if (station == null){
+            return null;
+        }
+
+        if (!(level().getBlockState(station).getBlock() instanceof ChestBlock)){
+            return null;
+        }
+
+        return station;
+    }
+
+    public void setStation(BlockPos newStation){
+        if ((level().getBlockState(newStation).getBlock() instanceof ChestBlock)){
+            station = newStation;
+        }   
     }
 
     @Override
