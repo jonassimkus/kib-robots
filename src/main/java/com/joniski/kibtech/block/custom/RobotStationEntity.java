@@ -162,6 +162,21 @@ public class RobotStationEntity extends BlockEntity implements MenuProvider {
     public EnergyStorage getEnergyStorage(){
         return energyStorage;
     }
+    
+    public boolean isInventoryFull(){
+        int amountFull = 0;
+        for (int i = 0; i < inventory.getSlots(); ++i){
+            if (inventory.getStackInSlot(i).getCount() > 0){
+                amountFull += 1;
+            }
+        }
+
+        if (amountFull == inventory.getSlots()){
+            return true;
+        }
+
+        return false;
+    }
 
     @Nullable
     @Override

@@ -14,6 +14,8 @@ public class NetheriteRobotEntity extends RobotEntity{
         maxToolTier = Tiers.STONE;
         moveSpeed = 1.3f;
         maxArea = 13;
+
+        
         dropItem = ModItems.NETHERITE_ROBOT_ITEM.asItem();
         inventory.setSize(29);
     }

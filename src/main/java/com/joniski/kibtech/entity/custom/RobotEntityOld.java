@@ -92,7 +92,7 @@ import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.entity.EntityType.Builder;
 
-public class RobotEntity extends Animal{
+public class RobotEntityOld extends Animal{
 
     public final AnimationState idleAnimationState = new AnimationState();
     private int idleAnimationTimeout = 0;
@@ -103,15 +103,17 @@ public class RobotEntity extends Animal{
     public BlockPos searchStart = null;
     public BlockPos searchEnd;
     private BlockPos station;
+    private List<BlockPos> targetTree;
     public Item dropItem = ModItems.COPPER_ROBOT_ITEM.asItem();
 
-    private BlockPos targetBlock;
-    private List<BlockPos> targetTree;
+    public boolean goStation = false;
+    public boolean charging = false; // < will make these not needed with state machine or atleast enum of some kinds.
+    private boolean moving = false;
+    private boolean harvesting = false;
+    private float harvestingTime = 0;
 
-    private int choppingTicks = 0;
     public int maxArea = 5;
     private RobotWorkType workType = RobotWorkType.NONE;
-    private RobotStates state = RobotStates.IDLE;
 
    // Slot 1: Battery; Slot 2: Tool
     public final ItemStackHandler inventory = new ItemStackHandler(6){
@@ -191,7 +193,7 @@ public class RobotEntity extends Animal{
         }
     };
 
-    public RobotEntity(EntityType<? extends Animal> entityType, Level level) {
+    public RobotEntityOld(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
     }
 
@@ -242,6 +244,8 @@ public class RobotEntity extends Animal{
 
     public void setStation(BlockPos newStation){
         if ((level().getBlockState(newStation).getBlock() instanceof RobotStation)){
+            goStation = false;
+            stopMoving();
             station = newStation;
         }  
     }
@@ -301,7 +305,7 @@ public class RobotEntity extends Animal{
         if (!player.level().isClientSide()){
             if (player instanceof ServerPlayer serverPlayer) {
                 if (player.getItemInHand(hand).getItem() instanceof RobotWandItem  wand){
-                    wand.setRobotTarget(this);
+                   // wand.setRobotTarget(this);
                     return InteractionResult.SUCCESS;
                 }
 
@@ -346,232 +350,24 @@ public class RobotEntity extends Animal{
         if (this.level().isClientSide()){
             setupAnimationStates();
         }else{
-            updateState();
+            work();
         }   
     }
 
-    public void updateState(){
-        if (searchStart == null || searchEnd == null){
-            return;
-        }
-
-        ItemStack battStack = inventory.getStackInSlot(0);
-        if (!(battStack.getItem() instanceof BatteryItem battery)){
-            getNavigation().stop();
-            return;
-        }
-
-        PowerRecord power = battStack.get(ModDataComponents.POWER_COMPONENT);
-        if (power == null){
-            getNavigation().stop();
-            return;
-        }
-
-        if (power.power() > 1){
-            battStack.set(ModDataComponents.POWER_COMPONENT, new PowerRecord(power.power()-1));
-        }else{
-            getNavigation().stop();
-            return;
-        }
-
-
-        KibTech.LOGGER.debug(state.toString());
-
-        if (state != RobotStates.FOLLOWING){
-            if (getFollowEntity() != null){
-                state = RobotStates.FOLLOWING;
-            }
-        }
-
-        switch (state) {
-            case RobotStates.FOLLOWING:
-                if (getFollowEntity() == null){
-                    state = RobotStates.IDLE;
-                    break;
-                }
-
-                if (distanceTo(getFollowEntity()) < 2){
-                    break;
-                }
-
-                getNavigation().moveTo(getFollowEntity(), moveSpeed);
-                break;
-            case RobotStates.MOVING:
-                if (getNavigation().isStuck() || getNavigation().getTargetPos() == null){
-                    state = RobotStates.IDLE;
-                    targetBlock = null;
-                    getNavigation().stop();
-                    break;
-                }
-
-                if (getNavigation().isDone()){
-                    if (workType == RobotWorkType.FARMER){
-                        state = RobotStates.FARMING;
-                    }
-                    if (workType == RobotWorkType.LUMBERJACK){
-                        choppingTicks = 20;
-                        state = RobotStates.CHOPPING;
-                    }
-                    if (targetBlock == getStation()){
-                        state = RobotStates.STATIONED;
-                    }
-                    getNavigation().stop();
-                    break;
-                }
-                break;
-            case RobotStates.IDLE:
-                if (workType == RobotWorkType.LUMBERJACK){
-                    List<BlockPos> tree = findClosestTreeInArea(getCommandSenderWorld(), searchStart, searchEnd, blockPosition());
-                    if (tree.size() > 0){
-                        BlockPos closestBlock = getClosestBlock(tree, blockPosition());
-                        closestBlock = getNearestClearBlock(level(), closestBlock, blockPosition());
-
-                        targetTree = tree;
-                        getNavigation().moveTo(closestBlock.getX(), closestBlock.getY(), closestBlock.getZ(), 1, moveSpeed);
-                        state = RobotStates.MOVING;
-                    }
-                }
-
-                if (workType == RobotWorkType.FARMER){
-                    List<BlockPos> validBlocks = getValidBlocks(level(), searchStart, searchEnd, workType);
-                
-                    if (validBlocks.size() == 0){
-                        break;
-                    }
-                    BlockPos closestPos = getClosestBlock(validBlocks, blockPosition());
-
-                    targetBlock = closestPos;
-                    getNavigation().moveTo(closestPos.getX(), closestPos.getY(), closestPos.getZ(), moveSpeed);
-                    state = RobotStates.MOVING;
-                }
-
-                if (getStation() != null){
-                    RobotStationEntity stationEntity = (RobotStationEntity)level().getBlockEntity(getStation());
-                    boolean isStationFull = stationEntity.isInventoryFull();
-                    boolean isRobotFull = isInventoryFull();
-
-                    if (isRobotFull && !isStationFull){
-                        BlockPos clearBlock = getNearestClearBlock(level(), getStation(), blockPosition());
-                        getNavigation().moveTo(clearBlock.getX(), clearBlock.getY(), clearBlock.getZ(), moveSpeed);
-                        targetBlock = getStation();
-                        state = RobotStates.MOVING;
-                    }
-                }
-
-                if (getNavigation().isDone() || getNavigation().getPath() == null || getNavigation().isStuck()){
-                   state = RobotStates.IDLE;
-                   targetBlock = null;
-                }
-                break;
-
-            case RobotStates.FARMING:
-                BlockState oldBlockState = level().getBlockState(targetBlock);
-                
-                if (!(oldBlockState.getBlock() instanceof CropBlock block)){
-                    state = RobotStates.IDLE;
-                    targetBlock = null;
-                    break;
-                }
-
-                breakAndStoreBlock(targetBlock);
-
-                oldBlockState = block.getStateForAge(0);
-                level().setBlock(targetBlock, oldBlockState, 0);
-                state = RobotStates.IDLE;
-                targetBlock = null;
-                break;
-            case RobotStates.CHOPPING:
-                choppingTicks --;
-
-                if (choppingTicks > 0){
-                    break;
-                }
-                
-                for (BlockPos log : targetTree){
-                    breakAndStoreBlock(log);
-                }
-
-                targetTree = null;
-                state = RobotStates.IDLE;
-                break;
-
-            case RobotStates.STATIONED:
-                if (getStation() == null){
-                    state = RobotStates.IDLE;
-                    break;
-                }
-                RobotStationEntity robotStationEntity = (RobotStationEntity)level().getBlockEntity(getStation());
-                for (int i = 2; i < inventory.getSlots(); ++i){
-                    for (int v = 0; v < robotStationEntity.inventory.getSlots(); ++ v){
-                        if (inventory.getStackInSlot(i).getCount() == 0){
-                            continue;
-                        }
-                        inventory.setStackInSlot(i, robotStationEntity.inventory.insertItem(v, inventory.getStackInSlot(i), false));
-                    }
-                }
-                state = RobotStates.IDLE;
-
-                break;
-            default:
-                break;
-        }
-    }
-
-    public boolean isInventoryFull(){
-        int amountFull = 0;
-        for (int i = 0; i < inventory.getSlots(); ++i){
-            if (inventory.getStackInSlot(i).getCount() > 0){
-                amountFull += 1;
-            }
-        }
-
-        if (amountFull == inventory.getSlots()){
-            return true;
-        }
-
-        return false;
-    }
-
-    public void breakAndStoreBlock(BlockPos pos){
-        BlockState oldBlockState = level().getBlockState(pos);
-
-         if (!(oldBlockState.getBlock() instanceof Block block)){
-            return;
-        }
-
-        LootParams.Builder lootparams = new LootParams.Builder((ServerLevel)level()).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(pos)).withParameter(LootContextParams.TOOL, ItemStack.EMPTY);
-        List<ItemStack> drops = oldBlockState.getDrops(lootparams);
-
-        for(int y = 0; y < drops.size(); ++y){
-            if (workType == RobotWorkType.FARMER){
-                if (block.getCloneItemStack(level(), pos, oldBlockState).getItem() == drops.get(y).getItem()){
-                    drops.get(y).setCount(drops.get(y).getCount()-1);
-                }
-            }
-
-            for(int i = 1; i < inventory.getSlots(); ++ i){
-                drops.set(y, inventory.insertItem(i, drops.get(y), false));
-            }
-        }
-
-        SimpleContainer dropContainer = new SimpleContainer(drops.size());
-        for (int i = 0; i < dropContainer.getContainerSize(); ++ i){
-            dropContainer.setItem(i, drops.get(i));
-        }
-
-        Containers.dropContents(level(), getOnPos(), dropContainer);
-
-        level().destroyBlock(pos, false);
-        return;
-    }
-
     public void setFollowEntity(Entity e){
+        stopMoving();
         if (e == null){
             followEntityUUID = null;
             return;
         }
 
         followEntityUUID = e.getUUID();
+    }
+
+    public void stopMoving(){
+        moving = false;
+        goStation = false;
+        getNavigation().stop();
     }
 
     public Entity getFollowEntity(){
@@ -582,6 +378,325 @@ public class RobotEntity extends Animal{
         return level().getPlayerByUUID(followEntityUUID);
     }
 
+    // TODO: CHANGE TO STATE MACHINE
+    public void work(){
+        ItemStack battStack = inventory.getStackInSlot(0);
+        if (!(battStack.getItem() instanceof BatteryItem battery)){
+            stopMoving();
+            charging = false;
+            return;
+        }
+
+        PowerRecord power = battStack.get(ModDataComponents.POWER_COMPONENT);
+        if (power == null){
+            stopMoving();
+            charging = false;
+            return;
+        }
+
+        if (power.power() > 1){
+            battStack.set(ModDataComponents.POWER_COMPONENT, new PowerRecord(power.power()-1));
+        }else{
+            charging = false;
+            stopMoving();
+        }
+
+        Entity followEntity = getFollowEntity();
+
+        if (followEntity != null){
+            follow();
+            return;
+        }
+
+        if (getStation() != null && power.power() < (battery.getMaxPower() / 10) && !charging && (level().getBlockEntity(getStation()) instanceof RobotStationEntity e)){
+            if (e.getEnergyStorage().getEnergyStored() >= 100){
+                stopMoving();
+                charging = true;
+                goToStation();
+            }
+        }
+
+        if (charging && distanceToSqr(getStation().getCenter()) < 2){
+            if (!(level().getBlockEntity(getStation()) instanceof RobotStationEntity e)){
+                return;
+            }
+
+            if (e.getEnergyStorage().getEnergyStored() < 100){
+                charging = false;
+                return;
+            }
+
+            int amountThere = e.getEnergyStorage().extractEnergy(35, true);
+
+            if (amountThere == 0){
+                charging = false;
+                return;
+            }
+
+            int amountTook = battery.charge(battStack, amountThere);
+            e.getEnergyStorage().extractEnergy(amountTook, false);
+
+            if (battery.isFull(battStack)){
+                charging = false;
+            }
+            return;
+        }
+
+        if (charging && distanceToSqr(getStation().getCenter()) >= 2 && !moving){
+            goToStation();
+            return;
+        }
+
+        int amountFull = 0;
+        for (int i = 0; i < inventory.getSlots(); ++i){
+            if (inventory.getStackInSlot(i).getCount() > 0){
+                amountFull += 1;
+            }
+        }
+
+        if (getStation() != null && !goStation){
+            int stationAmount = 0;
+            if (level().getBlockEntity(getStation()) instanceof RobotStationEntity stationEntity){
+                for (int i = 0; i < stationEntity.inventory.getSlots(); ++ i){
+                    if (stationEntity.inventory.getStackInSlot(i).getCount() > 0){
+                        stationAmount += 1;
+                    }
+                }
+
+                if (amountFull == inventory.getSlots() && stationAmount < stationEntity.inventory.getSlots()){
+                    stopMoving();
+                    goToStation();
+                    return;
+                }
+
+                if (amountFull == inventory.getSlots() && stationAmount == stationEntity.inventory.getSlots()){
+                    stopMoving();
+                    return;
+                }
+            }
+        }
+        
+        if (getStation() == null && amountFull == inventory.getSlots()){
+            stopMoving();
+            return;
+        }
+
+        if (goStation){
+            goToStation();
+            return;
+        }
+
+        if (workType == RobotWorkType.FARMER){
+            farm();
+            return;
+        }
+
+        if (workType == RobotWorkType.LUMBERJACK){
+            lumberjack();
+            return;
+        } 
+
+
+    }
+
+    public void follow(){
+        if (distanceTo(getFollowEntity()) < 2){
+            return;
+        }
+
+        if (getNavigation().isDone() || getNavigation().isStuck()){
+            moving = false;
+        }
+
+        if (moving == false){
+            getNavigation().moveTo(getFollowEntity(), moveSpeed);
+            moving = true;
+        }
+    }
+
+    public void goToStation(){
+        if (!moving){
+            if (getStation() == null){
+                return;
+            }
+
+            stopMoving();
+            moving = true;
+            goStation = true;
+
+            getNavigation().moveTo(getStation().getX(), getStation().getY(), getStation().getZ(), moveSpeed);
+            return;
+        }
+
+        if (getNavigation().isStuck()){
+            stopMoving();
+            return;
+        }
+
+        if (getNavigation().isDone()){
+            stopMoving();
+
+            RobotStationEntity robotStationEntity = (RobotStationEntity)level().getBlockEntity(getStation());
+            for (int i = 2; i < inventory.getSlots(); ++i){
+                for (int v = 0; v < robotStationEntity.inventory.getSlots(); ++ v){
+                    if (inventory.getStackInSlot(i).getCount() == 0){
+                        continue;
+                    }
+                    inventory.setStackInSlot(i, robotStationEntity.inventory.insertItem(v, inventory.getStackInSlot(i), false));
+                }
+            }
+
+            return;
+        }
+
+        if (getNavigation().getPath() == null){
+            stopMoving();
+            return;
+        }
+    }
+
+
+    public void farm(){
+        if (searchStart == null || searchEnd == null){
+            return;
+        }
+
+        if(!moving){
+            List<BlockPos> validBlocks = getValidBlocks(level(), searchStart, searchEnd, workType);
+            BlockPos closest = getClosestBlock(validBlocks, blockPosition());
+
+            if (closest == null){
+                stopMoving();
+                return;
+            }
+
+            getNavigation().moveTo(closest.getX(), closest.getY(), closest.getZ(), moveSpeed);
+            moving = true;
+            return;
+        }
+
+        if (getNavigation().isStuck()){
+            moving = false;
+            return;
+        }
+
+        if (getNavigation().getTargetPos() == null){
+            stopMoving();
+            return;
+        }
+
+        if (getNavigation().isDone()){
+            BlockPos targetPos = getNavigation().getTargetPos();
+            BlockState oldBlockState = level().getBlockState(targetPos);
+
+            if (!(oldBlockState.getBlock() instanceof CropBlock block)){
+                return;
+            }
+
+            LootParams.Builder lootparams = new LootParams.Builder((ServerLevel)level()).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(targetPos)).withParameter(LootContextParams.TOOL, ItemStack.EMPTY);
+            List<ItemStack> drops = oldBlockState.getDrops(lootparams);
+
+            for(int y = 0; y < drops.size(); ++y){
+                if (block.getCloneItemStack(level(), targetPos, oldBlockState).getItem() == drops.get(y).getItem()){
+                    drops.get(y).setCount(drops.get(y).getCount()-1);
+                }
+
+                for(int i = 1; i < inventory.getSlots(); ++ i){
+                    drops.set(y, inventory.insertItem(i, drops.get(y), false));
+                }
+            }
+
+            SimpleContainer dropContainer = new SimpleContainer(drops.size());
+            for (int i = 0; i < dropContainer.getContainerSize(); ++ i){
+                dropContainer.setItem(i, drops.get(i));
+            }
+
+            Containers.dropContents(level(), getOnPos(), dropContainer);
+
+            level().destroyBlock(targetPos, false);
+
+            oldBlockState = block.getStateForAge(0);
+            level().setBlock(targetPos, oldBlockState, 0);
+            moving = false;
+            return;
+        }
+
+        if (getNavigation().getPath() == null){
+            moving = false;
+            return;
+        }
+
+    }
+
+    public void lumberjack(){
+        if (searchStart == null || searchEnd == null){
+            return;
+        }
+
+        if (!moving){
+            List<BlockPos> tree = findClosestTreeInArea(getCommandSenderWorld(), searchStart, searchEnd, blockPosition());
+            if (tree.size() > 0){
+                BlockPos closestBlock = getClosestBlock(tree, blockPosition());
+                closestBlock = getNearestClearBlock(level(), closestBlock, blockPosition());
+
+                targetTree = tree;
+                getNavigation().moveTo(closestBlock.getX(), closestBlock.getY(), closestBlock.getZ(), 1, moveSpeed);
+                moving = true;
+            }
+
+            return;
+        }
+
+        if (getNavigation().isStuck()){
+            moving = false;
+            return;
+        }
+
+        if (getNavigation().getTargetPos() == null){
+            stopMoving();
+            return;
+        }
+
+        if (getNavigation().isDone()){
+            if (targetTree == null){
+                moving = false;
+                return;
+            }
+
+            for(BlockPos log: targetTree){
+                BlockState oldBlockState = level().getBlockState(log);
+
+                LootParams.Builder lootparams = new LootParams.Builder((ServerLevel)level()).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(log)).withParameter(LootContextParams.TOOL, ItemStack.EMPTY);
+                List<ItemStack> drops = oldBlockState.getDrops(lootparams);
+
+                for(int y = 0; y < drops.size(); ++y){
+                    for(int i = 1; i < inventory.getSlots(); ++ i){
+                        drops.set(y, inventory.insertItem(i, drops.get(y), false));
+                    }
+                }
+                
+                SimpleContainer dropContainer = new SimpleContainer(drops.size());
+                for (int i = 0; i < dropContainer.getContainerSize(); ++ i){
+                    dropContainer.setItem(i, drops.get(i));
+                }
+
+                Containers.dropContents(level(), getOnPos(), dropContainer);
+
+
+                level().destroyBlock(log, false);
+
+                targetTree = null;
+            }
+
+            moving = false;
+            return;
+        }
+
+        if (getNavigation().getPath() == null){
+            moving = false;
+            return;
+        }
+    }
 
     public static List<BlockPos> findClosestTreeInArea(Level level, BlockPos start, BlockPos end, BlockPos current){
         List<BlockPos> logs = new ArrayList<BlockPos>();

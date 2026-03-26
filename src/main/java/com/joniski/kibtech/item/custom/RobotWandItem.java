@@ -69,7 +69,6 @@ public class RobotWandItem extends Item{
                 setRobot.searchStart = pos.get(0);
                 setRobot.searchEnd = pos.get(1);
                 setRobot.setFollowEntity(null);
-                setRobot.stopMoving();
 
                 setRobot = null;
                 startPos = null;
@@ -129,7 +128,6 @@ public class RobotWandItem extends Item{
                 setRobot.searchStart = pos.get(0);
                 setRobot.searchEnd = pos.get(1);
                 setRobot.setFollowEntity(null);
-                setRobot.stopMoving();
 
                 setRobot = null;
                 startPos = null;
