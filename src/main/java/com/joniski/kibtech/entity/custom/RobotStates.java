@@ -5,6 +5,7 @@ public enum RobotStates {
     MOVING,
     FARMING,
     CHOPPING,
+    PLANTING,
     FOLLOWING,
     STATIONED,
     MINING

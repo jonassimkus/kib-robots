@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
 
 public class TreeUtil {
+    // Could use alot of work this class, doesn't work perfectly at all.
+        
     public static boolean isLog(Level level, BlockPos pos){
         if (level.getBlockState(pos) == null){
             return false;
@@ -183,5 +185,16 @@ public class TreeUtil {
         }
 
         return tree;
+    }
+
+    public static BlockPos baseTreeBlock(Level level, List<BlockPos> tree){
+        BlockPos lowestBlockPos = tree.get(0);
+        for (BlockPos blockPos : tree){
+            if (blockPos.getY() < lowestBlockPos.getY()){
+                lowestBlockPos = blockPos;
+            }
+        }
+
+        return lowestBlockPos;
     }
 }

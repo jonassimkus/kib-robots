@@ -11,7 +11,7 @@ public class NetheriteRobotEntity extends RobotEntity{
 
     public NetheriteRobotEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
-        maxToolTier = Tiers.STONE;
+        maxToolTier = Tiers.NETHERITE;
         moveSpeed = 1.3f;
         maxArea = 13;
 

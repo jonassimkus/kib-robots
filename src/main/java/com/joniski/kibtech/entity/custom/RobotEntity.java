@@ -110,6 +110,7 @@ public class RobotEntity extends Animal{
 
     private BlockPos targetBlock;
     private List<BlockPos> targetTree;
+    private List<BlockPos> rememberSaplingSpots = new ArrayList<BlockPos>();
 
     private int choppingTicks = 0;
     public int maxArea = 5;
@@ -358,6 +359,8 @@ public class RobotEntity extends Animal{
             return;
         }
 
+        KibTech.LOGGER.debug(state.toString());
+
         ItemStack battStack = inventory.getStackInSlot(0);
         if (!(battStack.getItem() instanceof BatteryItem battery)){
             getNavigation().stop();
@@ -422,13 +425,32 @@ public class RobotEntity extends Animal{
                 break;
             case RobotStates.IDLE:
                 if (workType == RobotWorkType.LUMBERJACK){
+                    for (BlockPos pos : rememberSaplingSpots){
+                        boolean hasSapling = false;
+                        for (int i = 2; i < inventory.getSlots(); ++i){
+                            ItemStack itemStack = inventory.getStackInSlot(i);
+                            if (Block.byItem(itemStack.getItem()) instanceof SaplingBlock sapling){
+                                hasSapling = true;
+                                break;
+                            }
+                        }
+
+                        if (!(level().getBlockState(pos).getBlock() instanceof SaplingBlock sapling) && hasSapling){
+                            BlockPos closestBlock = getNearestClearBlock(level(), pos, blockPosition());
+
+                            targetBlock = pos;
+                            getNavigation().moveTo(closestBlock.getX(), closestBlock.getY(), closestBlock.getZ(), 1, moveSpeed);
+                            state = RobotStates.PLANTING;
+                            break;
+                        }
+                    }
+
                     List<BlockPos> tree = findClosestTreeInArea(getCommandSenderWorld(), searchStart, searchEnd, blockPosition());
                     if (tree.size() > 0){
-                        BlockPos closestBlock = getClosestBlock(tree, blockPosition());
-                        closestBlock = getNearestClearBlock(level(), closestBlock, blockPosition());
+                        targetBlock = TreeUtil.baseTreeBlock(level(), tree);
+                        BlockPos closestBlock = getNearestClearBlock(level(), targetBlock, blockPosition());
 
                         targetTree = tree;
-                        targetBlock = tree.get(0);
                         getNavigation().moveTo(closestBlock.getX(), closestBlock.getY(), closestBlock.getZ(), 1, moveSpeed);
                         state = RobotStates.MOVING;
                     }
@@ -517,9 +539,52 @@ public class RobotEntity extends Animal{
                     }
                 }
 
+                if (!(level().getBlockState(targetBlock).getBlock() instanceof SaplingBlock)){
+                    rememberSaplingSpots.add(targetBlock);
+                }
+
                 targetBlock = null;
                 targetTree = null;
                 state = RobotStates.IDLE;
+                break;
+            
+            case RobotStates.PLANTING:
+                boolean hasSapling = false;
+                for (int i = 2; i < inventory.getSlots(); ++i){
+                    ItemStack itemStack = inventory.getStackInSlot(i);
+                    if (Block.byItem(itemStack.getItem()) instanceof SaplingBlock sapling){
+                        hasSapling = true;
+                        break;
+                    }
+                }
+
+                if (!hasSapling){
+                    state = RobotStates.IDLE;
+                    break;
+                }
+
+                if (getNavigation().isStuck() || getNavigation().getTargetPos() == null){
+                    state = RobotStates.IDLE;
+                    targetBlock = null;
+                    getNavigation().stop();
+                    break;
+                }
+
+                if (getNavigation().isDone()){
+                    for (int i = 2; i < inventory.getSlots(); ++i){
+                        ItemStack itemStack = inventory.getStackInSlot(i);
+                        if (Block.byItem(itemStack.getItem()) instanceof SaplingBlock sapling){
+                            BlockState saplingState = sapling.defaultBlockState();
+                            level().setBlock(targetBlock, saplingState, 0);
+                            itemStack.setCount(itemStack.getCount()-1);
+                            rememberSaplingSpots.remove(targetBlock);
+                        }
+                    }
+
+                    state = RobotStates.IDLE;
+                    getNavigation().stop();
+                    break;
+                }
                 break;
 
             case RobotStates.STATIONED:
