@@ -71,6 +71,7 @@ import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DoubleBlockCombiner.BlockType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
@@ -90,6 +91,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarrotBlock;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.entity.EntityType.Builder;
 
 public class RobotEntity extends Animal{
@@ -98,6 +100,7 @@ public class RobotEntity extends Animal{
     private int idleAnimationTimeout = 0;
     protected Tiers maxToolTier = Tiers.WOOD;
     protected float moveSpeed = 0.75f;
+
     // use UUID instead of storing entity, easier for packet and saving nbt data 
     private UUID followEntityUUID;
     public BlockPos searchStart = null;
@@ -283,8 +286,8 @@ public class RobotEntity extends Animal{
 
     @Override
     protected void registerGoals() {
+        // EXAMPLE GOAL FOR FUTURE REFRENCE
       //  this.goalSelector.addGoal(0, new TemptGoal(this, 1, stack -> stack.is(ModItems.WEAK_BATTERY), false));
-
     }
 
     public static AttributeSupplier.Builder createAttributes(){
@@ -425,6 +428,7 @@ public class RobotEntity extends Animal{
                         closestBlock = getNearestClearBlock(level(), closestBlock, blockPosition());
 
                         targetTree = tree;
+                        targetBlock = tree.get(0);
                         getNavigation().moveTo(closestBlock.getX(), closestBlock.getY(), closestBlock.getZ(), 1, moveSpeed);
                         state = RobotStates.MOVING;
                     }
@@ -479,6 +483,13 @@ public class RobotEntity extends Animal{
                 targetBlock = null;
                 break;
             case RobotStates.CHOPPING:
+                if (level().getBlockState(targetBlock).getBlock() instanceof AirBlock){
+                    targetBlock = null;
+                    targetTree = null;
+                    state = RobotStates.IDLE;
+                    break;
+                }
+
                 choppingTicks --;
 
                 if (choppingTicks > 0){
@@ -489,6 +500,17 @@ public class RobotEntity extends Animal{
                     breakAndStoreBlock(log);
                 }
 
+                for (int i = 2; i < inventory.getSlots(); ++i){
+                    ItemStack itemStack = inventory.getStackInSlot(i);
+                    if (Block.byItem(itemStack.getItem()) instanceof SaplingBlock sapling){
+                        BlockState saplingState = sapling.defaultBlockState();
+                        level().setBlock(targetBlock, saplingState, 0);
+                        itemStack.setCount(itemStack.getCount()-1);
+                        break;
+                    }
+                }
+
+                targetBlock = null;
                 targetTree = null;
                 state = RobotStates.IDLE;
                 break;
