@@ -1,0 +1,24 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "key": {
+        "C": {
+            "item": "kibrobots:chip_item"
+        },
+        "P": {
+            "item": "kibrobots:plastic_item"
+        },
+        "D": {
+            "item": "minecraft:iron_ingot"
+        }
+    },
+    "pattern": [
+        "  D",
+        " C ",
+        "P  "
+    ],
+    "result": {
+        "count": 1,
+        "id": "kibrobots:moderate_battery"
+    }
+}

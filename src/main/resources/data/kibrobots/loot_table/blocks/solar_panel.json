@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "kibrobots:solar_panel"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "kibrobots:blocks/solar_panel"
+}

@@ -1,0 +1,27 @@
+{
+  "itemGroup.kibrobots.kibrobots": "Kib Robots",
+  "block.kibrobots.solar_panel": "Solar Panel",
+  "block.kibrobots.advanced_solar_panel": "Advanced Solar Panel",
+  "block.kibrobots.battery_charger": "Battery Charger",
+  "block.kibrobots.robot_station": "Robot Station",
+  "block.kibrobots.cobalt_ore": "Cobalt Ore",
+
+  "item.kibrobots.cobalt_ingot": "Cobalt Bar",
+  "item.kibrobots.raw_cobalt": "Raw Cobalt",
+  "item.kibrobots.weak_battery": "Weak Battery",
+  "item.kibrobots.moderate_battery": "Moderate Battery",
+  "item.kibrobots.strong_battery": "Strong Battery",
+  "item.kibrobots.copper_robot_item": "Copper Robot",
+  "item.kibrobots.netherite_robot_item": "Netherite Robot",
+  "item.kibrobots.iron_robot_item": "Iron Robot",
+  "item.kibrobots.diamond_robot_item": "Diamond Robot",
+  "item.kibrobots.chip_item": "Microchip",
+  "item.kibrobots.advanced_chip_item": "Advanced Microchip",
+  "item.kibrobots.plastic_item": "Plastic",
+  "item.kibrobots.robot_wand_item": "Robot Wand",
+
+  "kibrobots.configuration.title": "Kib Robots Configs",
+  "kibrobots.configuration.section.kibrobots.common.toml": "Kib Robots Configs",
+  "kibrobots.configuration.section.kibrobots.common.toml.title": "Kib Robots Configs"
+
+}

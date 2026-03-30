@@ -1,0 +1,27 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "key": {
+        "C": {
+            "item": "kibrobots:advanced_chip_item"
+        },
+        "c": {
+            "item": "minecraft:gold_ingot"
+        },
+        "g": {
+            "item": "minecraft:diamond"
+        },
+        "s": {
+            "item": "minecraft:stone"
+        }
+    },
+    "pattern": [
+        "cgc",
+        " C ",
+        "sss"
+    ],
+    "result": {
+        "count": 1,
+        "id": "kibrobots:advanced_solar_panel"
+    }
+}

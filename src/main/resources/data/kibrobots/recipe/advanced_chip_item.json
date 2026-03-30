@@ -1,0 +1,27 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "key": {
+        "Q": {
+            "item": "minecraft:quartz"
+        },
+        "D": {
+            "item": "minecraft:diamond"
+        },
+        "c": {
+            "item": "kibrobots:cobalt_ingot"
+        },
+        "C": {
+            "item": "kibrobots:chip_item"
+        }
+    },
+    "pattern": [
+        "QDQ",
+        "cCc",
+        "QcQ"
+    ],
+    "result": {
+        "count": 1,
+        "id": "kibrobots:advanced_chip_item"
+    }
+}

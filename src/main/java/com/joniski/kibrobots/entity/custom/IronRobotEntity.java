@@ -1,0 +1,21 @@
+package com.joniski.kibrobots.entity.custom;
+
+import com.joniski.kibrobots.item.ModItems;
+
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.item.Tiers;
+import net.minecraft.world.level.Level;
+
+public class IronRobotEntity extends RobotEntity{
+
+    public IronRobotEntity(EntityType<? extends Animal> entityType, Level level) {
+        super(entityType, level);
+        maxToolTier = Tiers.IRON;
+        moveSpeed = 0.9f;
+        maxArea = 9;
+        dropItem = ModItems.IRON_ROBOT_ITEM.asItem();
+        inventory.setSize(11);
+    }
+}
+    

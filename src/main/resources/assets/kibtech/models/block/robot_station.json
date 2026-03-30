@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures" : {
-      "down" : "kibtech:block/robot_station_top",
-      "all" : "kibtech:block/robot_station",
-      "up" : "kibtech:block/robot_station_top"
-  }
-}

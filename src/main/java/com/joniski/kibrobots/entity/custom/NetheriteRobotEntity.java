@@ -1,0 +1,23 @@
+package com.joniski.kibrobots.entity.custom;
+
+import com.joniski.kibrobots.item.ModItems;
+
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.item.Tiers;
+import net.minecraft.world.level.Level;
+
+public class NetheriteRobotEntity extends RobotEntity{
+
+    public NetheriteRobotEntity(EntityType<? extends Animal> entityType, Level level) {
+        super(entityType, level);
+        maxToolTier = Tiers.NETHERITE;
+        moveSpeed = 1.3f;
+        maxArea = 13;
+
+        
+        dropItem = ModItems.NETHERITE_ROBOT_ITEM.asItem();
+        inventory.setSize(29);
+    }
+}
+    
