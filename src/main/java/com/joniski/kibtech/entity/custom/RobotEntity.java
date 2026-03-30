@@ -92,6 +92,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CarrotBlock;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.PumpkinBlock;
 import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.entity.EntityType.Builder;
 
@@ -514,16 +515,20 @@ public class RobotEntity extends Animal{
             case RobotStates.FARMING:
                 BlockState oldBlockState = level().getBlockState(targetBlock);
                 
-                if (!(oldBlockState.getBlock() instanceof CropBlock block)){
+                if ((oldBlockState.getBlock() instanceof CropBlock block)){
+                    breakAndStoreBlock(targetBlock);
+                    oldBlockState = block.getStateForAge(0);
+                    level().setBlock(targetBlock, oldBlockState, 0);
+
                     state = RobotStates.IDLE;
                     targetBlock = null;
                     break;
                 }
 
-                breakAndStoreBlock(targetBlock);
-
-                oldBlockState = block.getStateForAge(0);
-                level().setBlock(targetBlock, oldBlockState, 0);
+                if (isValidWorkBlock(level(), targetBlock, workType)){
+                    breakAndStoreBlock(targetBlock);
+                }
+   
                 state = RobotStates.IDLE;
                 targetBlock = null;
                 break;
@@ -660,8 +665,10 @@ public class RobotEntity extends Animal{
 
         for(int y = 0; y < drops.size(); ++y){
             if (workType == RobotWorkType.FARMER){
-                if (block.getCloneItemStack(level(), pos, oldBlockState).getItem() == drops.get(y).getItem()){
-                    drops.get(y).setCount(drops.get(y).getCount()-1);
+                if (oldBlockState.getBlock() instanceof CropBlock){
+                    if (block.getCloneItemStack(level(), pos, oldBlockState).getItem() == drops.get(y).getItem()){
+                        drops.get(y).setCount(drops.get(y).getCount()-1);
+                    }
                 }
             }
 
@@ -797,6 +804,14 @@ public class RobotEntity extends Animal{
                 if (crop.isMaxAge(level.getBlockState(blockPos))){
                     return true;
                 }
+            }
+
+            if (level.getBlockState(blockPos).getBlock() instanceof PumpkinBlock pump){
+                return true;
+            }
+
+            if (level.getBlockState(blockPos).getBlock().getDescriptionId().equals("block.minecraft.melon")){
+                return true;
             }
         }
 
