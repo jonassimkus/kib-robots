@@ -66,6 +66,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.PickaxeItem;
+import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.component.Tool;
@@ -172,6 +173,8 @@ public class RobotEntity extends Animal{
         };
 
         public void setJob(ItemStack stack){
+            state = RobotStates.IDLE;
+            targetBlock = null;
             if (stack == null){
                 workType = RobotWorkType.NONE;
                 return;
@@ -359,8 +362,6 @@ public class RobotEntity extends Animal{
             return;
         }
 
-        KibTech.LOGGER.debug(state.toString());
-
         ItemStack battStack = inventory.getStackInSlot(0);
         if (!(battStack.getItem() instanceof BatteryItem battery)){
             getNavigation().stop();
@@ -413,7 +414,17 @@ public class RobotEntity extends Animal{
                         state = RobotStates.FARMING;
                     }
                     if (workType == RobotWorkType.LUMBERJACK){
-                        choppingTicks = 20;
+                        if (!(inventory.getStackInSlot(1).getItem() instanceof AxeItem axe)){
+                            state = RobotStates.IDLE;
+                            targetBlock = null;
+                            getNavigation().stop();
+                            break;
+                        }
+                        Tier tier = axe.getTier();
+                        if (tier.equals(Tiers.GOLD)){
+                            tier = Tiers.IRON;
+                        }
+                        choppingTicks = 60 - ((int)tier.getSpeed()*2);
                         state = RobotStates.CHOPPING;
                     }
                     if (targetBlock == getStation()){
@@ -424,6 +435,10 @@ public class RobotEntity extends Animal{
                 }
                 break;
             case RobotStates.IDLE:
+                if (workType == RobotWorkType.NONE){
+                    break;
+                }
+
                 if (workType == RobotWorkType.LUMBERJACK){
                     for (BlockPos pos : rememberSaplingSpots){
                         boolean hasSapling = false;
@@ -489,6 +504,7 @@ public class RobotEntity extends Animal{
                     }
                 }
 
+                // This fixes things idk why
                 if (getNavigation().isDone() || getNavigation().getPath() == null || getNavigation().isStuck()){
                    state = RobotStates.IDLE;
                    targetBlock = null;

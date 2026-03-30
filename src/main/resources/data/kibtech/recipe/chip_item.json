@@ -10,11 +10,14 @@
         },
         "P": {
             "item": "kibtech:plastic_item"
+        },
+        "c": {
+            "item": "kibtech:cobalt_ingot"
         }
     },
     "pattern": [
         "CIC",
-        "IPI",
+        "cPc",
         "CIC"
     ],
     "result": {

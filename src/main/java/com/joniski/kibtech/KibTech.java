@@ -49,11 +49,14 @@ public class KibTech {
             output.accept(ModItems.IRON_ROBOT_ITEM.get());
             output.accept(ModItems.DIAMOND_ROBOT_ITEM.get());
             output.accept(ModItems.CHIP_ITEM.get());
+            output.accept(ModItems.COBALT_INGOT.get());
+            output.accept(ModItems.RAW_COBALT.get());
             output.accept(ModItems.PLASTIC_ITEM.get());
             output.accept(ModItems.ADVANCED_CHIP_ITEM.get());
             output.accept(ModItems.ROBOT_WAND_ITEM.get());
             output.accept(ModBlocks.SOLAR_PANEL.get());
             output.accept(ModBlocks.ADVANCED_SOLAR_PANEL.get());
+            output.accept(ModBlocks.COBALT_ORE.get());
             output.accept(ModBlocks.BATTERY_CHARGER.get());
             output.accept(ModBlocks.ROBOT_STATION.get());
         })

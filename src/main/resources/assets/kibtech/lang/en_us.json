@@ -4,7 +4,10 @@
   "block.kibtech.advanced_solar_panel": "Advanced Solar Panel",
   "block.kibtech.battery_charger": "Battery Charger",
   "block.kibtech.robot_station": "Robot Station",
+  "block.kibtech.cobalt_ore": "Cobalt Ore",
 
+  "item.kibtech.cobalt_ingot": "Cobalt Bar",
+  "item.kibtech.raw_cobalt": "Raw Cobalt",
   "item.kibtech.weak_battery": "Weak Battery",
   "item.kibtech.moderate_battery": "Moderate Battery",
   "item.kibtech.strong_battery": "Strong Battery",

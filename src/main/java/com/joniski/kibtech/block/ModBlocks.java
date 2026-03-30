@@ -23,35 +23,36 @@ public class ModBlocks {
 
     public static final DeferredBlock<Block> SOLAR_PANEL = registerBlock("solar_panel",
      () -> new SolarPanel(BlockBehaviour.Properties.of()
-        .strength(2f)
-        .requiresCorrectToolForDrops()
+        .strength(0.25f)
         .sound(SoundType.STONE)
         .noOcclusion()
     ));
 
     public static final DeferredBlock<Block> ADVANCED_SOLAR_PANEL = registerBlock("advanced_solar_panel",
      () -> new AdvancedSolarPanel(BlockBehaviour.Properties.of()
-        .strength(2f)
-        .requiresCorrectToolForDrops()
+        .strength(0.25f)
         .sound(SoundType.STONE)
         .noOcclusion()
     ));
 
     public static final DeferredBlock<Block> ROBOT_STATION = registerBlock("robot_station",
      () -> new RobotStation(BlockBehaviour.Properties.of()
-        .strength(2f)
-        .requiresCorrectToolForDrops()
+        .strength(0.25f)
         .sound(SoundType.STONE)
     ));
 
     public static final DeferredBlock<Block> BATTERY_CHARGER = registerBlock("battery_charger",
      () -> new BatteryCharger(BlockBehaviour.Properties.of()
-        .strength(2f)
-        .requiresCorrectToolForDrops()
+        .strength(0.25f)
         .sound(SoundType.STONE)
-        .noOcclusion()
     ));
 
+    public static final DeferredBlock<Block> COBALT_ORE = registerBlock("cobalt_ore",
+     () -> new Block(BlockBehaviour.Properties.of()
+        .strength(3f)
+        .requiresCorrectToolForDrops()
+        .sound(SoundType.STONE)
+    ));
 
     public static <T extends Block> DeferredBlock<T> registerBlock(String name, Supplier<T> block){
         DeferredBlock<T> toReturn = BLOCKS.register(name, block);

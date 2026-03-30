@@ -8,14 +8,17 @@
         "D": {
             "item": "minecraft:diamond"
         },
+        "c": {
+            "item": "kibtech:cobalt_ingot"
+        },
         "C": {
             "item": "kibtech:chip_item"
         }
     },
     "pattern": [
         "QDQ",
-        "DCD",
-        "QDQ"
+        "cCc",
+        "QcQ"
     ],
     "result": {
         "count": 1,
